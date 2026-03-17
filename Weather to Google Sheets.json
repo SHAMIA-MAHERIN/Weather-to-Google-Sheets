@@ -1,0 +1,248 @@
+{
+  "name": "Weather to Google Sheets",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "id": "d9d35398-f62a-4c07-b21c-b31deeadbd82",
+      "name": "Every Hour",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        240,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.open-meteo.com/v1/forecast",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "latitude",
+              "value": "23.8103"
+            },
+            {
+              "name": "longitude",
+              "value": "90.4125"
+            },
+            {
+              "name": "current_weather",
+              "value": "true"
+            },
+            {
+              "name": "timezone",
+              "value": "Asia/Dhaka"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "08b508f7-21a4-40a6-b154-353b8a3af193",
+      "name": "Fetch Weather",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        464,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "city",
+              "value": "Dhaka",
+              "type": "string"
+            },
+            {
+              "id": "3",
+              "name": "temperature",
+              "value": "={{ $json.current_weather.temperature }}",
+              "type": "number"
+            },
+            {
+              "id": "4",
+              "name": "windspeed",
+              "value": "={{ $json.current_weather.windspeed }}",
+              "type": "number"
+            },
+            {
+              "id": "5",
+              "name": "weathercode",
+              "value": "={{ $json.current_weather.weathercode }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8f1ce74c-9574-46df-8d67-9533c2a1071f",
+      "name": "Format Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        688,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1cXPOj9CuEVB5T9ihf7aHGhdeyFCqr4rCs2iUNa-CcdY/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cXPOj9CuEVB5T9ihf7aHGhdeyFCqr4rCs2iUNa-CcdY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $json.timestamp }}",
+            "City": "={{ $json.city }}",
+            "Temperature (°C)": "={{ $json.temperature }}",
+            "Wind Speed (km/h)": "={{ $json.windspeed }}",
+            "Weather Code": "={{ $json.weathercode }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "City",
+              "displayName": "City",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Temperature (°C)",
+              "displayName": "Temperature (°C)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Wind Speed (km/h)",
+              "displayName": "Wind Speed (km/h)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Weather Code",
+              "displayName": "Weather Code",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "85ac6679-6c4b-4308-95cb-44fbc9a2aa19",
+      "name": "Append to Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        912,
+        304
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "d6WFzcd8nXE68sBx",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Every Hour": {
+      "main": [
+        [
+          {
+            "node": "Fetch Weather",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Weather": {
+      "main": [
+        [
+          {
+            "node": "Format Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Data": {
+      "main": [
+        [
+          {
+            "node": "Append to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "a3ec0427-fc77-43b1-92f2-f154a90e0c12",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b6528c7eb610c2c11d3977b981681459d81cc6e149bfdd46aad17f3c6c8b68f1"
+  },
+  "id": "TWo0tAefB0dtpKb8",
+  "tags": []
+}
